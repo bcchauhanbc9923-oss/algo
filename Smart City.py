@@ -25,6 +25,7 @@ class CityMap:
                     prev[v] = u
                     heapq.heappush(pq, (dist[v], v))
         return dist, prev
+
 def reconstruct_path(prev, start, target):
     path = []
     node = target
@@ -40,7 +41,8 @@ def draw_graph(city):
         for v, w in city.graph[u]:
             G.add_edge(u, v, weight=w)
     pos = nx.spring_layout(G, seed=42)
-    nx.draw(G, pos, with_labels=True, node_color="#7bc8f6", node_size=900, font_size=10, font_weight="bold", edgecolors="black")
+    nx.draw(G, pos, with_labels=True, node_color="#7bc8f6", node_size=900,
+            font_size=10, font_weight="bold", edgecolors="black")
     nx.draw_networkx_edge_labels(G, pos, edge_labels=nx.get_edge_attributes(G, "weight"))
     return G, pos
 
@@ -61,22 +63,19 @@ def interactive_route_planner(city):
             if not path:
                 print(f" No path found between {start} and {target}")
             else:
-                total = 0
-                for u, v in zip(path, path[1:]):
-                    for nbr, w in city.graph[u]:
-                        if nbr == v:
-                            total += w
-                            break
+                total = sum(w for u, v in zip(path, path[1:]) 
+                            for nbr, w in city.graph[u] if nbr == v)
                 edges = list(zip(path, path[1:]))
+                plt.cla()  
+                nx.draw(G, pos, with_labels=True, node_color="#7bc8f6", node_size=900,
+                        font_size=10, font_weight="bold", edgecolors="black")
+                nx.draw_networkx_edge_labels(G, pos, edge_labels=nx.get_edge_attributes(G, "weight"))
                 nx.draw_networkx_edges(G, pos, edgelist=edges, width=3, edge_color="red")
                 plt.title(f"Shortest Path {start} → {target} : {path}\nTotal Distance = {total}", fontsize=10)
                 plt.draw()
                 print(f" Shortest Path {start} → {target}: {path}")
                 print(f" Total Distance: {total}\n")
-                plt.pause(3)
-                plt.clf()
-                interactive_route_planner(city)
-            clicks.clear()
+                clicks.clear()  
 
     plt.gcf().canvas.mpl_connect("button_press_event", on_click)
     plt.show()
